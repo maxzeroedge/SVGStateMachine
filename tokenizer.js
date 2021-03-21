@@ -48,16 +48,49 @@ var TextTokenizer = {
             font += "italic ";
         }
         if(fontSize) {
-            font += fontSize;
+            font += fontSize + " ";
         }
         if(fontFamily) {
-            font += fontFamily;
+            if(/^\s+$/.test(currentWord)){
+                font += "Times New Roman";
+            } else {
+                font += fontFamily;
+            }
         }
         context.font = font;
         const metrics = context.measureText(currentWord);
-        attrs.width = Math.round(metrics.width);
-        attrs.height = Math.round(metrics.height);
+        if(/^\s+$/.test(currentWord)){
+            attrs.width = Math.ceil(metrics.width);
+        } else {
+            attrs.width = Math.round(metrics.width);
+        }
+        // attrs.height = Math.round(metrics.height);
         return attrs;
+    },
+    breakByWidth({wordTokens, width}) {
+        const widthDivision = [];
+        let tempWidthCollection = [];
+        let currentWidth = 0;
+        wordTokens.forEach(wordToken => {
+            let tempWidth = currentWidth + wordToken.width;
+            if(tempWidth > width){
+                widthDivision.push(tempWidthCollection);
+                tempWidthCollection = [wordToken];
+                currentWidth = wordToken.width;
+            } else if (tempWidth == width) {
+                tempWidthCollection.push(wordToken);
+                widthDivision.push(tempWidthCollection);
+                tempWidthCollection = [];
+                currentWidth = 0;
+            } else {
+                currentWidth = tempWidth;
+                tempWidthCollection.push(wordToken);
+            }
+        })
+        if(tempWidthCollection.length){
+            widthDivision.push(tempWidthCollection);
+        }
+        return widthDivision;
     }
 }
 

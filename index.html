@@ -42,6 +42,15 @@
             border: solid thin #a0a0a0;
             text-align: center;
         }
+        #text-tokenizer-output-blockified{
+            width: 500px;
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .text-tokenizer-output-line{
+            display: flex;
+            width: 500px;
+        }
     </style>
 </head>
 <body>
@@ -72,9 +81,11 @@
         <section class="text-tokenizer-container">
             <textarea name="text-tokenizer-input" id="text-tokenizer-input" cols="30" rows="10"></textarea>
             <canvas id="text-tokenizer-canvas"></canvas>
-            <div id="text-tokenizer-output"></div>
+            <div id="text-tokenizer-output" style="display: none;"></div>
+            <div id="text-tokenizer-output-blockified"></div>
             <script>
                 const outputElement = document.getElementById("text-tokenizer-output");
+                const outputBlockifiedElement = document.getElementById("text-tokenizer-output-blockified");
                 const editorUpdated = (editorValue) => {
                     if(editorValue){
                         outputElement.innerHTML = "";
@@ -82,11 +93,30 @@
                             fullText: editorValue
                         })
                         wordTokens.forEach(wordToken => {
+                            const computedStyles = getComputedStyle(document.getElementById("text-tokenizer-input"));
+                            wordToken.fontFamily = computedStyles.getPropertyValue('font-family');
+                            wordToken.fontSize = Math.ceil(parseInt(computedStyles.getPropertyValue('font-size').replace("px", ""))) + "px";
                             wordToken = TextTokenizer.getWordWidth(wordToken);
                             const tokenDiv = document.createElement("div")
                             tokenDiv.setAttribute("class", "text-tokenizer-output-token");
                             tokenDiv.innerText = wordToken.currentWord + " " + wordToken.width;
                             outputElement.appendChild(tokenDiv)
+                        })
+                        const widthDivision = TextTokenizer.breakByWidth({
+                            wordTokens, width: 500
+                        })
+                        widthDivision.forEach(divisionItem => {
+                            const outerTokenDiv = document.createElement("div");
+                            outerTokenDiv.setAttribute("class", "text-tokenizer-output-line");
+                            divisionItem.forEach(wordToken => {
+                                wordToken = TextTokenizer.getWordWidth(wordToken);
+                                const tokenDiv = document.createElement("div")
+                                tokenDiv.setAttribute("class", "text-tokenizer-output-token-block");
+                                tokenDiv.setAttribute("data-width", wordToken.width);
+                                tokenDiv.innerHTML = wordToken.currentWord.replace(/\s/g, '&nbsp;');
+                                outerTokenDiv.appendChild(tokenDiv)
+                            })
+                            outputBlockifiedElement.appendChild(outerTokenDiv);
                         })
                     }
                 }
