@@ -8,6 +8,7 @@
     <script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
     <script src="./svg_state_controller.js" type="module"></script>
     <script src="./tokenizer.js" type="module"></script>
+    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/5/tinymce.min.js" referrerpolicy="origin"></script>
     <style>
         body{
             margin: 0;
@@ -70,21 +71,37 @@
         </section>
         <section class="text-tokenizer-container">
             <textarea name="text-tokenizer-input" id="text-tokenizer-input" cols="30" rows="10"></textarea>
+            <canvas id="text-tokenizer-canvas"></canvas>
             <div id="text-tokenizer-output"></div>
             <script>
                 const outputElement = document.getElementById("text-tokenizer-output");
-                document.getElementById("text-tokenizer-input").addEventListener("change", (e) => {
-                    outputElement.innerHTML = "";
-                    if(e.currentTarget.value){
-                        const wordTokens = TextTokenizer.getWords(e.currentTarget.value)
+                const editorUpdated = (editorValue) => {
+                    if(editorValue){
+                        outputElement.innerHTML = "";
+                        const wordTokens = TextTokenizer.getWords({
+                            fullText: editorValue
+                        })
                         wordTokens.forEach(wordToken => {
+                            wordToken = TextTokenizer.getWordWidth(wordToken);
                             const tokenDiv = document.createElement("div")
                             tokenDiv.setAttribute("class", "text-tokenizer-output-token");
-                            tokenDiv.innerText = wordToken;
+                            tokenDiv.innerText = wordToken.currentWord + " " + wordToken.width;
                             outputElement.appendChild(tokenDiv)
                         })
                     }
-                })
+                }
+                // tinymce.init({
+                //     selector: "#text-tokenizer-input",
+                //     setup: (editor) => {
+                //         editor.on('init', (e) => {
+                //             console.log("Initialized TinyMCE");
+                //         });
+                //         editor.on('input', (e) => {
+                //             editorUpdated(editor.getContent());
+                //         })
+                //     }
+                // })
+                document.getElementById("text-tokenizer-input").addEventListener("change", (e)=>{editorUpdated(e.currentTarget.value)})
             </script>
         </section>
     </main>
