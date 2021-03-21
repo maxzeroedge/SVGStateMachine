@@ -7,33 +7,86 @@
     <title>SVG Parser</title>
     <script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
     <script src="./svg_state_controller.js" type="module"></script>
+    <script src="./tokenizer.js" type="module"></script>
     <style>
+        body{
+            margin: 0;
+        }
         .hide{
             display: none;
+        }
+        .main-body-container{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        }
+        .main-body-container section {
+            border: solid 1px #a0a0a0;
+            min-height: 500px;
+            max-height: 99vh;
+            overflow: auto;
+        }
+        #svg_state_output {
+            width: 100%;
+            overflow-y: auto;
+            word-break: break-word;
+        }
+        #text-tokenizer-output{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+        }
+        .text-tokenizer-output-token{
+            background-color: #fafafa;
+            color: #0f0f0f;
+            border-radius: 4px;
+            border: solid thin #a0a0a0;
+            text-align: center;
         }
     </style>
 </head>
 <body>
-    <input type="file" name="svg_state_selector" id="svg_state_selector" />
-    <div id="svg_state_output"></div>
-    <div class="hide" id="dummy"></div>
-    <script>
-        // import StateController from './svg_state_controller';
-        const domParser = new DOMParser();
-        document.getElementById("svg_state_selector").addEventListener("change", (e)=>{
-            if(e.currentTarget.files && e.currentTarget.files[0]){
-                var mimeType = e.currentTarget.files[0].type;
-                if(mimeType == "image/svg+xml"){
-                    var fileReader = new FileReader();
-                    fileReader.onload = function(){
-                        const input = domParser.parseFromString(fileReader.result, "text/html");
-                        const output = StateController.parseSVG(input);
-                        document.getElementById('svg_state_output').textContent = JSON.stringify(output);
+    <main class="main-body-container">
+        <section class="svg-state-machine-container">
+            <input type="file" name="svg_state_selector" id="svg_state_selector" accept="image/svg+xml"/>
+            <div id="svg_state_output"></div>
+            <div class="hide" id="dummy"></div>
+            <script>
+                // import StateController from './svg_state_controller';
+                const domParser = new DOMParser();
+                document.getElementById("svg_state_selector").addEventListener("change", (e)=>{
+                    if(e.currentTarget.files && e.currentTarget.files[0]){
+                        var mimeType = e.currentTarget.files[0].type;
+                        if(mimeType == "image/svg+xml"){
+                            var fileReader = new FileReader();
+                            fileReader.onload = function(){
+                                const input = domParser.parseFromString(fileReader.result, "image/svg+xml");
+                                const output = StateController.parseSVG(input);
+                                document.getElementById('svg_state_output').textContent = JSON.stringify(output);
+                            }
+                            fileReader.readAsText(e.currentTarget.files[0]);
+                        }
                     }
-                    fileReader.readAsText(e.currentTarget.files[0]);
-                }
-            }
-        });
-    </script>
+                });
+            </script>
+        </section>
+        <section class="text-tokenizer-container">
+            <textarea name="text-tokenizer-input" id="text-tokenizer-input" cols="30" rows="10"></textarea>
+            <div id="text-tokenizer-output"></div>
+            <script>
+                const outputElement = document.getElementById("text-tokenizer-output");
+                document.getElementById("text-tokenizer-input").addEventListener("change", (e) => {
+                    outputElement.innerHTML = "";
+                    if(e.currentTarget.value){
+                        const wordTokens = TextTokenizer.getWords(e.currentTarget.value)
+                        wordTokens.forEach(wordToken => {
+                            const tokenDiv = document.createElement("div")
+                            tokenDiv.setAttribute("class", "text-tokenizer-output-token");
+                            tokenDiv.innerText = wordToken;
+                            outputElement.appendChild(tokenDiv)
+                        })
+                    }
+                })
+            </script>
+        </section>
+    </main>
 </body>
 </html>
