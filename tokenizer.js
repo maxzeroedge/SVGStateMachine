@@ -51,11 +51,12 @@ var TextTokenizer = {
             font += fontSize + " ";
         }
         if(fontFamily) {
-            if(/^\s+$/.test(currentWord)){
-                font += "Times New Roman";
-            } else {
-                font += fontFamily;
-            }
+            // if(/^\s+$/.test(currentWord)){
+            //     font += "Times New Roman";
+            // } else {
+            //     font += fontFamily;
+            // }
+            font += fontFamily;
         }
         context.font = font;
         const metrics = context.measureText(currentWord);

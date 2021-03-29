@@ -10,6 +10,13 @@
     <script src="./tokenizer.js" type="module"></script>
     <!-- <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/5/tinymce.min.js" referrerpolicy="origin"></script> -->
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Dela+Gothic+One&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Oswald&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Syne+Mono&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Dancing+Script&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Comfortaa&display=swap');
         body{
             margin: 0;
         }
@@ -46,10 +53,10 @@
             width: 500px;
             display: flex;
             flex-wrap: wrap;
+            border: dashed thin black;
         }
         .text-tokenizer-output-line{
             display: flex;
-            width: 500px;
         }
     </style>
 </head>
@@ -79,7 +86,18 @@
             </script>
         </section>
         <section class="text-tokenizer-container">
-            <textarea name="text-tokenizer-input" id="text-tokenizer-input" cols="30" rows="10"></textarea>
+            <textarea name="text-tokenizer-input" id="text-tokenizer-input" cols="30" rows="10" style="float: left"></textarea>
+            <input name="text-tokenizer-size" id="text-tokenizer-size" value="500" placeholder="Enter size to break" />
+            <select name="text-tokenizer-font" id="text-tokenizer-font">
+                <option value="">Page Default</option>
+                <option value="Dela Gothic One">Dela Gothic One</option>
+                <option value="Montserrat">Montserrat</option>
+                <option value="Oswald">Oswald</option>
+                <option value="Syne Mono">Syne Mono</option>
+                <option value="Playfair Display">Playfair Display</option>
+                <option value="Dancing Script">Dancing Script</option>
+                <option value="Comfortaa">Comfortaa</option>
+            </select>
             <canvas id="text-tokenizer-canvas"></canvas>
             <div id="text-tokenizer-output" style="display: none;"></div>
             <div id="text-tokenizer-output-blockified"></div>
@@ -87,14 +105,17 @@
                 const outputElement = document.getElementById("text-tokenizer-output");
                 const outputBlockifiedElement = document.getElementById("text-tokenizer-output-blockified");
                 const editorUpdated = (editorValue) => {
-                    if(editorValue){
+                    if(editorValue && document.getElementById("text-tokenizer-size").value){
+                        outputBlockifiedElement.innerHTML = "";
+                        const maxWidth = parseInt(document.getElementById("text-tokenizer-size").value)
+                        outputBlockifiedElement.style.width = maxWidth + "px";
                         outputElement.innerHTML = "";
                         const wordTokens = TextTokenizer.getWords({
                             fullText: editorValue
                         })
                         wordTokens.forEach(wordToken => {
-                            const computedStyles = getComputedStyle(document.getElementById("text-tokenizer-input"));
-                            wordToken.fontFamily = computedStyles.getPropertyValue('font-family');
+                            const computedStyles = getComputedStyle(document.getElementById("text-tokenizer-output-blockified")); // text-tokenizer-input
+                            wordToken.fontFamily = computedStyles.getPropertyValue('font-family').replace(/"/g, '');
                             wordToken.fontSize = Math.ceil(parseInt(computedStyles.getPropertyValue('font-size').replace("px", ""))) + "px";
                             wordToken = TextTokenizer.getWordWidth(wordToken);
                             const tokenDiv = document.createElement("div")
@@ -103,7 +124,7 @@
                             outputElement.appendChild(tokenDiv)
                         })
                         const widthDivision = TextTokenizer.breakByWidth({
-                            wordTokens, width: 500
+                            wordTokens, width: maxWidth
                         })
                         widthDivision.forEach(divisionItem => {
                             const outerTokenDiv = document.createElement("div");
@@ -132,6 +153,11 @@
                 //     }
                 // })
                 document.getElementById("text-tokenizer-input").addEventListener("change", (e)=>{editorUpdated(e.currentTarget.value)})
+                document.getElementById("text-tokenizer-font").addEventListener("change", (e)=>{
+                    const fontFamily = document.getElementById("text-tokenizer-font").value;
+                    document.getElementById("text-tokenizer-output-blockified").style.fontFamily = fontFamily;
+                    editorUpdated(document.getElementById("text-tokenizer-input").value);
+                })
             </script>
         </section>
     </main>
